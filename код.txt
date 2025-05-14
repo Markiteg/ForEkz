@@ -1,0 +1,38 @@
+public partial class MainWindow : Window
+{
+    podgotovkaDBEntities database = new podgotovkaDBEntities();
+    
+    public MainWindow()
+    {
+        InitializeComponent();
+        var product = database.Продукты_.ToList();
+        var productTypes = database.ТипПродукта_.ToList();
+        foreach (var p in product)
+        {
+            var typeName = productTypes.FirstOrDefault(t => t.Код == p.Тип_продукции)?.Тип_продукции;
+
+            string str = typeName + " | " + p.Наименование_продукции + '\n' + p.Артикул + '\n' + "                                                                                       " + PriceProdut(p.Код) + '\n'
+                + p.Минимальная_стоимость_для_партнера + "(p.)" + '\n' + p.Ширина_рулона__м + "(m)" + '\n'; 
+            listbox.Items.Add(str);
+        }
+    }
+
+    private double PriceProdut(int code)
+    {
+        double price = 0;
+        
+        var produtsmaterial = database.ПродуктыМатериалы_.ToList();
+        for (int i = 0; i < produtsmaterial.Count; i++)
+        {
+            if (produtsmaterial[i].Продукция == code)
+            {
+                int codemat = (int)produtsmaterial[i].Наименование_материала;
+                var mater = database.Материалы_.FirstOrDefault(x => x.Код == codemat);
+                double pricemat = (double)produtsmaterial[i].Необходимое_количество_материала * (double)mater.Цена_единицы_материала;
+                price += pricemat;
+            }
+        }
+
+        return price;
+    }
+}
